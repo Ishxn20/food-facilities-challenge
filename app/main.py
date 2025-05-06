@@ -98,14 +98,16 @@ def ui():
           border-radius: 1rem;
           width: 30rem;
         }
-        .btn-primary { background-color: var(--brand-primary); border-color: var(--brand-primary); }
-        .btn-primary:hover { background-color: var(--brand-secondary); border-color: var(--brand-secondary); }
-
-        /* Ensure search buttons are always visible */
         .btn-primary {
+          background-color: var(--brand-secondary);
+          border-color: var(--brand-secondary);
+          color: white;
           opacity: 1 !important;
           visibility: visible !important;
+          display: inline-block !important;
         }
+        .btn-primary:hover { background-color: var(--brand-secondary); border-color: var(--brand-secondary); }
+
         /* Make main title white */
         h1.text-center {
           color: #ffffff !important;
