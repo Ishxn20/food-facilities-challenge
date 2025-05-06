@@ -1,56 +1,92 @@
-# Food Facilities Challenge
+# SF Mobile Food Facilities API
 
-Use this data set about Mobile Food Facilities in San Francisco (https://data.sfgov.org/Economy-and-Community/Mobile-Food-Facility-Permit/rqzj-sfat/data) to build an application. Please clarify with your recruiter first if you will be doing the Backend Focused or Frontend Focused version of the project, and what language you will be doing the challenge in. Make sure this is clear before you start this challenge.
+## Problem & Solution
 
-**Backend Focused Version**
+The City of San Francisco maintains data on permitted mobile food vendors (like food trucks). This project creates a simple web-based API and UI to search through this data in three ways:
 
-Your Application should have the following features:
-- Search by name of applicant. Include optional filter on "Status" field.
-- Search by street name. The user should be able to type just part of the address. Example: Searching for "SAN" should return food trucks on "SANSOME ST"
-- Given a latitude and longitude, the API should return the 5 nearest food trucks. By default, this should only return food trucks with status "APPROVED", but the user should be able to override this and search for all statuses.
-  - You can use any external services to help with this (e.g. Google Maps API).
-- We write automated tests and we would like you to do so as well.
+1. **By applicant name** – users can type the full or partial name of a food truck and optionally filter by permit status.
+2. **By address substring** – users can enter a partial street name and see food trucks operating there.
+3. **By geographic proximity** – users can input a latitude and longitude and get back the 5 closest food trucks (optionally filtering only for active/approved ones).
 
-*Bonus Points:*
-- Use an API documentation tool
-- Provide a dockerfile with everything necessary to run your application (for backend focused candidates)
-- Build a UI
+The application is built with **FastAPI**, uses **pandas** to load and filter data from the CSV file, and calculates distances using the **haversine** package. A **Bootstrap-based UI** is also provided for ease of use.
 
-**Frontend Focused Version**
+---
 
-Your application should have the following features:
-- Search by name of applicant. Include optional filter on "Status" field.
-- Search by street name. The user should be able to type just part of the address. Example: Searching for "SAN" should return food trucks on "SANSOME ST"
-- Build a UI using a frontend framework like React. You have creative freedom to design the UI however you would like.
+## Technical & Architectural Decisions
 
-*Bonus points:*
-- Write automated tests
-- Use an API documentation tool
-- Build the other features listed in the Backend Focused Version
+- **FastAPI** was chosen for its speed, clean async support, built-in validation, and automatic documentation generation.
+- **pandas** is used because the data comes as a CSV, and pandas is the most convenient way to filter and manipulate tabular data in-memory.
+- **haversine** is used to compute accurate great-circle distances between two latitude/longitude points for the "nearby" endpoint.
+- **Docker** was added to ensure portability and ease of testing without dependency conflicts.
+- **Bootstrap** was used for a quick and responsive frontend layout.
+- **pytest** is used for testing all three endpoint behaviors including edge cases and parameter validation.
 
-## README
+---
 
-Your code should include a README file including the following items:
+## Critique
 
-- Description of the problem and solution;
-- Reasoning behind your technical/architectural decisions
-- Critique section:
-  - What would you have done differently if you had spent more time on this?
-  - What are the trade-offs you might have made?
-  - What are the things you left out?
-  - What are the problems with your implementation and how would you solve them if we had to scale the application to a large number of users?
-- Please document any steps necessary to run your solution and your tests.
+### 1. What would I have done differently with more time?
 
-## How we review
+- Replaced the CSV-based backend with a real database (e.g. PostgreSQL + PostGIS).
+- Implemented more sophisticated search features like fuzzy name matching or typo-tolerance.
+- Added pagination to return longer result lists without overloading the UI or API.
+- Polished the UI further (add loading indicators, error messages, mobile responsiveness).
 
-We value quality over feature-completeness. It is fine to leave things aside provided you call them out in your project's README.
-The aspects of your code we will assess include:
+---
 
-- Clarity: does the README clearly and concisely explains the problem and solution? Are technical tradeoffs explained?
-- Correctness: does the application do what was asked? If there is anything missing, does the README explain why it is missing?
-- Code quality: is the code simple, easy to understand, and maintainable? Are there any code smells or other red flags? Does object-oriented code follows principles such as the single responsibility principle? Is the coding style consistent with the language's guidelines? Is it consistent throughout the codebase?
-- Security: are there any obvious vulnerabilities?
-- Technical choices: do choices of libraries, databases, architecture etc. seem appropriate for the chosen application?
+### 2. What trade-offs did I make?
 
-## What to send back to our team
-Please send an email back to your point of contact with a compressed (zip) file of your Github project repo when done.
+- **CSV in-memory** approach: Faster to build and sufficient for a prototype, but doesn't scale well.
+- **Frontend is static + minimal**: Focused effort on backend logic and correctness, rather than on advanced UI features.
+- Used **synchronous pandas operations**: Easier to reason about, but not optimized for concurrency or performance under heavy load.
+
+---
+
+### 3. What was left out?
+
+- Authentication and rate limiting.
+- Full RESTful filtering options (e.g., exact vs partial match toggles).
+- Geo search optimizations like spatial indexing.
+- UI enhancements like map visualizations or advanced styling.
+- Tests for frontend behavior (e.g., integration or E2E tests with tools like Playwright or Selenium).
+
+---
+
+### 4. How would I scale this to many users?
+
+- Replace CSV with a database (e.g. PostgreSQL + PostGIS).
+- Index geolocation columns for fast spatial queries.
+- Cache repeated or expensive queries (e.g. nearest truck lookups) using Redis or similar.
+- Add a CDN and deploy behind a load balancer (e.g., with AWS ECS or GKE).
+- Add structured monitoring, logging, and error reporting.
+- Move from synchronous pandas to async-compatible tools or background workers.
+
+---
+
+### 5. How to run this project and its tests
+
+#### 🐳 Run the app using Docker:
+
+```bash
+docker build -t sf-food-backend .
+docker run --rm -p 8000:8000 sf-food-backend
+```
+
+Then visit: [http://localhost:8000/ui](http://localhost:8000/ui)
+
+Or view the API documentation at: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+#### 🧪 Run tests:
+
+```bash
+export PYTHONPATH=$PWD
+pytest
+
+docker run --rm sf-food-backend pytest
+```
+
+---
+
+## Final Thoughts
+
+This project was designed to be clean, correct, and robust under basic use cases. While some features were left out intentionally due to time constraints, the core functionality is complete and well-tested.
